@@ -1,7 +1,6 @@
 import itertools
 
 def parenthesizations(n):
-  #Test
   """
   Returns a list of all possible parenthesizations of length n.
 
@@ -18,8 +17,8 @@ def parenthesizations(n):
   if n == 0:
     return {""}
   else:
-    # TODO
-    pass
+    # For n > 0
+    return {"(" + a + ")" + b for i in range(n) for a in parenthesizations(i) for b in parenthesizations(n-i-1)}
 
 def product_orders(n):
   """
@@ -42,8 +41,13 @@ def product_orders(n):
   elif n == 2:
     return {"?*?"}
   else:
-    # TODO
-    pass
+    results = set()
+    for i in range(1, n):
+      for a in product_orders(i):
+        for b in product_orders(n-i):
+          results.add("(" + a + ")*(" + b + ")")
+    return results
+print(product_orders(4))
 
 def permutations_avoiding_231(n):
   """
@@ -62,8 +66,30 @@ def permutations_avoiding_231(n):
   if n < 3:
     return set(itertools.permutations(range(1, n+1)))
   else:
-    # TODO
-    pass
+    # general case dont repeat the same number
+    all_perms = itertools.permutations(range(1, n+1))
+    valid_perms = {perm for perm in all_perms if not contains_231_pattern(perm)}
+    return valid_perms
+  
+def contains_231_pattern(perm):
+    """
+    Checks if the given permutation contains the 2-3-1 pattern.
+    
+    Parameters:
+        perm (tuple): The permutation to check.
+    
+    Returns:
+        bool: True if the permutation contains the 2-3-1 pattern, False otherwise.
+    """
+    n = len(perm)
+    for i in range(n):
+        for j in range(i+1, n):
+            for k in range(j+1, n):
+                if perm[i] < perm[k] < perm[j]:
+                    return True
+    return False
+    
+print(permutations_avoiding_231(4))
 
 def triangulations(n):
   """
