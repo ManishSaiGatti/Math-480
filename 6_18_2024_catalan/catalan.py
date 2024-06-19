@@ -47,7 +47,6 @@ def product_orders(n):
         for b in product_orders(n-i):
           results.add("(" + a + ")*(" + b + ")")
     return results
-print(product_orders(4))
 
 def permutations_avoiding_231(n):
   """
@@ -67,29 +66,18 @@ def permutations_avoiding_231(n):
     return set(itertools.permutations(range(1, n+1)))
   else:
     # general case dont repeat the same number
-    all_perms = itertools.permutations(range(1, n+1))
+    def contains_231_pattern(perm):
+        for i in range(len(perm)):
+            for j in range(i+1, len(perm)):
+                for k in range(j+1, len(perm)):
+                    if perm[k] < perm[i] < perm[j]:
+                        return True
+        return False
+    
+    all_perms = set(itertools.permutations(range(1, n+1)))
     valid_perms = {perm for perm in all_perms if not contains_231_pattern(perm)}
+    
     return valid_perms
-  
-def contains_231_pattern(perm):
-    """
-    Checks if the given permutation contains the 2-3-1 pattern.
-    
-    Parameters:
-        perm (tuple): The permutation to check.
-    
-    Returns:
-        bool: True if the permutation contains the 2-3-1 pattern, False otherwise.
-    """
-    n = len(perm)
-    for i in range(n):
-        for j in range(i+1, n):
-            for k in range(j+1, n):
-                if perm[i] < perm[k] < perm[j]:
-                    return True
-    return False
-    
-print(permutations_avoiding_231(4))
 
 def triangulations(n):
   """
@@ -111,5 +99,31 @@ def triangulations(n):
   elif n == 3:
     return {tuple()}
   else:
-    pass
-    # TODO
+    # General case
+    def internal_edges(triang):
+            edges = set()
+            for i in range(len(triang) - 2):
+                for j in range(i + 2, len(triang) - (1 if i == 0 else 0)):
+                    edges.add((triang[i], triang[j]))
+            return edges
+        
+    def add_triangulations(triang, a, b, res):
+        if b - a < 2:
+            return
+        for i in range(a + 1, b):
+            if (triang[a], triang[i]) not in res and (triang[i], triang[b]) not in res:
+                new_res = res | {(triang[a], triang[i]), (triang[i], triang[b])}
+                yield from add_triangulations(triang, a, i, new_res)
+                yield from add_triangulations(triang, i, b, new_res)
+                yield new_res
+    
+    vertices = list(range(n))
+    results = set()
+    for triang in itertools.permutations(vertices):
+        for res in add_triangulations(triang, 0, n-1, set()):
+            results.add(frozenset(res))
+    
+    return {tuple(sorted(triang)) for triang in results}
+
+print(triangulations(3))
+print(triangulations(4))
