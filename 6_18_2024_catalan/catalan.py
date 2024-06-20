@@ -91,7 +91,7 @@ def triangulations(n):
     A set of tuple of pairs, where each pair represents an internal edge in the triangulation.
   
   Example:
-  >>> triangulations(3)
+  >>> triangulations(5)
   {((0, 3), (1, 3)), ((1, 4), (2, 4)), ((1, 3), (1, 4)), ((0, 2), (2, 4)), ((0, 2), (0, 3))}
   """
   if n < 3:
@@ -100,30 +100,31 @@ def triangulations(n):
     return {tuple()}
   else:
     # General case
-    def internal_edges(triang):
-            edges = set()
-            for i in range(len(triang) - 2):
-                for j in range(i + 2, len(triang) - (1 if i == 0 else 0)):
-                    edges.add((triang[i], triang[j]))
-            return edges
-        
-    def add_triangulations(triang, a, b, res):
-        if b - a < 2:
-            return
-        for i in range(a + 1, b):
-            if (triang[a], triang[i]) not in res and (triang[i], triang[b]) not in res:
-                new_res = res | {(triang[a], triang[i]), (triang[i], triang[b])}
-                yield from add_triangulations(triang, a, i, new_res)
-                yield from add_triangulations(triang, i, b, new_res)
-                yield new_res
-    
-    vertices = list(range(n))
-    results = set()
-    for triang in itertools.permutations(vertices):
-        for res in add_triangulations(triang, 0, n-1, set()):
-            results.add(frozenset(res))
-    
-    return {tuple(sorted(triang)) for triang in results}
+    result = set()
+    for i in range(n):
+        for j in range(i+2, n):
+            triangulation = [(i, j)]
+            remaining_polygon = [k for k in range(n) if k != i and k != j]
+            result.update(extend_triangulation(triangulation, remaining_polygon))
+    return result
+
+def extend_triangulation(triangulation, remaining_polygon):
+    """
+    Recursively extends a partial triangulation by adding new diagonals.
+    """
+    if len(remaining_polygon) == 3:
+        return {tuple(triangulation)}
+    result = set()
+    for i in range(len(remaining_polygon)):
+        for j in range(i+2, len(remaining_polygon)):
+            new_triangulation = triangulation + [(remaining_polygon[i], remaining_polygon[j])]
+            new_remaining_polygon = remaining_polygon[:i] + remaining_polygon[i+1:j] + remaining_polygon[j+1:]
+            result.update(extend_triangulation(new_triangulation, new_remaining_polygon))
+    return result
+
+
+
 
 print(triangulations(3))
 print(triangulations(4))
+print(triangulations(5))
