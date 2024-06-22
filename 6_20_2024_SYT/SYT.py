@@ -21,7 +21,24 @@ def is_valid_SYT(candidate):
   >>> is_valid_SYT(((1, 2, 3), (5, 4), (6))
   False
   """
-  return False
+  # Check rows
+  for row in candidate:
+    for i in range(len(row) - 1):
+      if row[i] >= row[i + 1]:
+        return False
+    
+  # Check columns
+  num_columns = max(len(row) for row in candidate)
+  for col in range(num_columns):
+    previous_value = -1
+    for row in candidate:
+      if col < len(row):
+        current_value = row[col]
+        if current_value <= previous_value:
+          return False
+        previous_value = current_value
+
+  return True
 
 def reshape_perm(perm, shape):
   """
@@ -38,7 +55,14 @@ def reshape_perm(perm, shape):
   >>> reshape_perm((1, 2, 3, 4, 5, 6), (3, 2, 1))
   ((1, 2, 3), (4, 5), (6,))
   """
-  return tuple()
+  tableau = []
+  lPerm = list(perm)
+  for i in range(len(shape)):
+    row = []
+    for j in range(shape[i]):
+      row.append(lPerm.pop(0))
+    tableau.append(tuple(row))
+  return tuple(tableau)
 
 def SYTs(shape):
   """
@@ -56,7 +80,12 @@ def SYTs(shape):
   """
 
   n = sum(shape)
+  perms = list(itertools.permutations(range(1, n + 1)))
   results = []
+  for i in range(len(perms)):
+    reshape = reshape_perm(perms[i], shape)
+    if(is_valid_SYT(reshape)):
+      results.append(reshape)
   return results
 
 def random_SYT(shape):
@@ -75,7 +104,14 @@ def random_SYT(shape):
   >>> random_SYT((2, 1))
   ((1, 2), (3,))
   """
-  return tuple()
+  n = sum(shape)
+  result = []
+  while True:
+    perm = list(range(1, n + 1))
+    random.shuffle(perm)
+    result = reshape_perm(perm, shape)
+    if is_valid_SYT(result):
+      return result
 
 def random_SYT_2(shape):
   """
@@ -92,5 +128,39 @@ def random_SYT_2(shape):
   Example:
   >>> random_SYT_2((2, 1))
   ((1, 2), (3,))
+
+  in example for shape (3, 2, 1) the function will generate a random SYT like this:
+  place 1 in the first row, first column
+  choose a valid place for 2: (1, 0) or (0, 1)
+  based on placement of 2, choose a valid place for 3, and so on
   """
-  return tuple()
+  n = sum(shape)
+  result = []
+  for i in range(len(shape)):
+    result.append(tuple([0] * shape[i]))
+  
+  result[0] = (1,) + result[0][1:]
+
+  prevRow = 0
+  rowColDict = {}
+  rowColDict[0] = 0
+  for i in range(1, len(shape)):
+    rowColDict[i] = -1
+
+  for i in range(2, n + 1):
+    placed = False
+    while not placed:
+      try:
+        row = random.randint(0, prevRow + 1)
+        col = random.randint(0, rowColDict[row] + 1)
+        if result[row][col] == 0:
+          if row > 0 and result[row - 1][col] == 0:
+            continue
+          result[row] = result[row][:col] + (i,) + result[row][col + 1:]
+          prevRow = max(prevRow, row)
+          rowColDict[row] += 1
+          placed = True
+      except:
+        pass
+
+  return tuple(result)
