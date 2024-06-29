@@ -66,6 +66,9 @@ class ConfusionMatrix:
         confusion_matrix = self.confusion_matrix
         num_classes = len(confusion_matrix)
         for i in range(num_classes):
+            if sum(confusion_matrix[i]) == 0:
+                print(f"No examples for class {i}")
+                continue
             print(
                 f"Accuracy for class {i} = {100 * confusion_matrix[i][i] / sum(confusion_matrix[i])}%"
             )
