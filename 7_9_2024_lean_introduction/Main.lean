@@ -38,7 +38,7 @@ theorem linear_formula (a : ℝ) (b: ℝ) (x: ℝ) (ha_ne_zero : a ≠ 0) : a*x+
     calc x = x - 0 := by simp
          _ = x - 0/a := by simp
          _ = x - (a*x+b)/a := by rw [h]
-         _ = x - (a/a)*xsorry - b/a := by ring
+         _ = x - (a/a)*x - b/a := by ring
          _ = x - 1*x - b/a := by simp [ha_ne_zero]
          _ = -b/a := by ring
   case mpr =>
@@ -47,3 +47,6 @@ theorem linear_formula (a : ℝ) (b: ℝ) (x: ℝ) (ha_ne_zero : a ≠ 0) : a*x+
              _ = (a/a) * -b + b := by ring
              _ = 1 * -b + b := by simp [ha_ne_zero]
              _ = 0 := by ring
+  done
+
+#check linear_formula
